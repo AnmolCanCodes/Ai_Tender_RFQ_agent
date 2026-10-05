@@ -1,37 +1,43 @@
+# Web Framework
 fastapi
 uvicorn[standard]
+python-multipart
 
+# Configuration
 pydantic
 pydantic-settings
 python-dotenv
 
+# Database
 sqlalchemy
 psycopg[binary]
 alembic
 pgvector
 
+# Authentication / Security
 python-jose[cryptography]
 passlib[bcrypt]
-python-multipart
 
+# HTTP / API
 httpx
 
+# AI / LLM
+huggingface-hub
 langchain
 langchain-core
 langchain-community
-langchain-huggingface
 langgraph
 
-huggingface-hub
-
+# Document Processing
 pypdf
-python-docx
 
+# Background Jobs / Cache
 redis
-celery
 
+# Testing
 pytest
 pytest-asyncio
-pytest-cov
+httpx
 
+# Code Quality
 ruff

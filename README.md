@@ -1,566 +1,209 @@
-# OpsPilot
+# AI Tender Intelligence Platform
 
-### AI-Powered Application Reliability & Incident Investigation Platform
-
-OpsPilot is a full-stack developer operations platform that helps engineering teams monitor application events, detect incidents, investigate failures, and understand their possible causes using AI.
-
-Instead of simply providing an AI chatbot, OpsPilot combines:
-
-* Application event ingestion
-* Incident detection
-* Incident management
-* Historical incident analysis
-* Technical-document RAG
-* AI-powered investigation
-* Deployment context
-* Redis-based background processing
-* PostgreSQL persistence
-* Dockerized infrastructure
-* Automated CI/CD
-
-The goal is to simulate a realistic production-oriented developer platform while demonstrating full-stack engineering and practical AI engineering.
-
----
+An AI-powered tender and RFQ intelligence platform that helps businesses analyze procurement documents, extract requirements, evaluate bid readiness, retrieve evidence-backed answers, and manage submission workflows.
 
 ## Problem
 
-When an application starts failing, developers usually have to inspect several sources manually:
+Tender and RFQ documents are often long, unstructured, and difficult to analyze manually.
 
-* application logs
-* error events
-* deployment history
-* documentation
-* previous incidents
-* service information
-* operational runbooks
+Important information such as:
 
-This makes debugging slower, especially when the cause is not immediately obvious.
+* eligibility criteria
+* technical specifications
+* financial requirements
+* required documents
+* deadlines
+* EMD requirements
+* penalties
+* delivery conditions
+* compliance requirements
 
-OpsPilot centralizes this information and uses an AI investigation workflow to help developers understand an incident and identify evidence-backed possible causes.
+may be distributed across dozens or hundreds of pages.
 
----
-
-# Core Workflow
-
-```text
-                    Developer
-                        │
-                        ▼
-                ┌───────────────┐
-                │ React Web App │
-                └───────┬───────┘
-                        │
-                        ▼
-                 ┌─────────────┐
-                 │   FastAPI   │
-                 │     API     │
-                 └──────┬──────┘
-                        │
-          ┌─────────────┼──────────────┐
-          │             │              │
-          ▼             ▼              ▼
-    PostgreSQL        Redis        AI Engine
-          │             │              │
-          │             │         ┌────┴─────┐
-          │             │         │ LangGraph│
-          │             │         └────┬─────┘
-          │             │              │
-          │             │       ┌──────┴──────┐
-          │             │       │             │
-          │             │      RAG          Tools
-          │             │       │             │
-          │             │       └──────┬──────┘
-          │             │              │
-          │             │        Hugging Face
-          │             │          Inference
-          │             │              │
-          └─────────────┴──────────────┘
-```
+The platform converts these documents into a structured, searchable, and actionable workspace.
 
 ---
 
-# How OpsPilot Works
+## Core Features
 
-## 1. Create a project
+### 1. Tender / RFQ Upload
 
-A developer creates an OpsPilot project.
+Upload procurement documents such as:
 
-Example:
+* PDF tenders
+* RFPs
+* RFQs
+* procurement specifications
+* supporting documents
 
-```text
-Project:
-ShopFlow
+The system processes the document and creates a searchable knowledge base.
 
-Environment:
-Production
+### 2. Automatic Tender Extraction
 
-Services:
-- checkout
-- payments
-- users
-- notifications
-```
+Extract important information including:
 
-OpsPilot generates an API key for event ingestion.
+* tender title
+* organization
+* tender reference number
+* estimated value
+* submission deadline
+* EMD
+* eligibility criteria
+* technical requirements
+* financial requirements
+* required documents
+* delivery requirements
+* penalties
+* warranty requirements
 
----
+### 3. Requirement Extraction
 
-## 2. Application sends events
+Requirements are categorized into:
 
-Applications can send events to OpsPilot using a REST API.
+* Eligibility
+* Financial
+* Technical
+* Documentation
+* Compliance
+* Commercial
+* Delivery
 
-Example:
+Each extracted requirement contains its source location whenever available.
 
-```http
-POST /api/v1/events
-```
+### 4. Evidence-Based RAG
 
-Example payload:
-
-```json
-{
-  "service": "checkout",
-  "environment": "production",
-  "level": "ERROR",
-  "message": "Database connection timeout",
-  "timestamp": "2026-10-03T10:32:14Z",
-  "metadata": {
-    "endpoint": "/checkout",
-    "status_code": 500
-  }
-}
-```
-
-OpsPilot validates and stores the event.
-
----
-
-# 3. Event processing
-
-Incoming events are processed asynchronously.
-
-```text
-Application
-     │
-     ▼
-FastAPI
-     │
-     ▼
-Redis Queue
-     │
-     ▼
-Background Worker
-     │
-     ├── store event
-     ├── update statistics
-     ├── check thresholds
-     └── detect potential incident
-```
-
-Redis is used for background processing and later can also support caching and rate limiting.
-
----
-
-# 4. Incident Detection
-
-OpsPilot monitors incoming events for abnormal behavior.
+Users can ask questions about a tender using natural language.
 
 Examples:
 
-```text
-500 errors suddenly increase
+* What are the eligibility requirements?
+* What documents must be submitted?
+* What is the EMD?
+* What are the delivery conditions?
+* What are the penalties for late delivery?
+* What certifications are required?
 
-Error rate exceeds threshold
+Answers include references to relevant document sections/pages.
 
-Repeated exception occurs
+### 5. Company Profile
 
-Service becomes unavailable
+Organizations can maintain information about:
 
-Large latency increase
-```
+* annual turnover
+* experience
+* certifications
+* products
+* technical capabilities
+* previous projects
+* government contracts
+* supporting documents
 
-When configured conditions are met, OpsPilot creates an incident.
+### 6. Requirement Matching
 
-Example:
+Compare tender requirements against company capabilities.
 
-```text
-INC-1042
+Each requirement can be classified as:
 
-Service:
-checkout
+* Matched
+* Partially Matched
+* Missing
+* Requires Verification
 
-Severity:
-HIGH
+### 7. Bid Readiness Analysis
 
-Status:
-OPEN
+Generate an evidence-based bid readiness report containing:
 
-Started:
-14:32 UTC
+* eligibility score
+* technical fit
+* documentation readiness
+* missing requirements
+* critical risks
+* items requiring human verification
 
-Reason:
-500 error rate exceeded threshold
-```
+The system does not make the final bid/no-bid decision.
 
----
+### 8. Submission Checklist
 
-# 5. Incident Timeline
+Automatically generate a checklist of required submission documents.
 
-OpsPilot builds a chronological timeline from available information.
+Users can:
 
-Example:
+* mark documents complete
+* add notes
+* assign tasks
+* track progress
 
-```text
-14:27  Deployment v1.8.2
-14:29  API latency increased
-14:31  Database connections increased
-14:32  500 errors increased
-14:33  Incident created
-14:34  AI investigation started
-```
+### 9. Deadline Tracking
 
-This helps developers correlate events.
+Track important dates including:
 
----
+* pre-bid meeting
+* clarification deadline
+* EMD deadline
+* final submission deadline
 
-# 6. Documentation RAG
+### 10. Audit Logs
 
-Developers can upload technical documentation such as:
+Track important actions such as:
 
-```text
-README.md
-architecture.md
-API documentation
-database documentation
-runbooks
-deployment documentation
-troubleshooting guides
-previous incident reports
-```
-
-The ingestion pipeline performs:
-
-```text
-Document
-   │
-   ▼
-Text extraction
-   │
-   ▼
-Chunking
-   │
-   ▼
-Hugging Face Embedding Model
-   │
-   ▼
-Vector Embeddings
-   │
-   ▼
-PostgreSQL + pgvector
-```
-
-During an investigation, relevant chunks are retrieved and provided to the AI.
+* document uploads
+* requirement modifications
+* verification actions
+* checklist updates
+* bid status changes
 
 ---
 
-# 7. AI Investigation
+## AI Architecture
 
-The AI investigation system is implemented using LangGraph.
+The AI pipeline combines:
 
-The investigation is not simply:
-
-```python
-llm.invoke("Why did my server fail?")
-```
-
-Instead, OpsPilot runs a structured workflow.
-
-```text
-START
-  │
-  ▼
-Understand Incident
-  │
-  ▼
-Retrieve Relevant Events
-  │
-  ▼
-Retrieve Documentation
-  │
-  ▼
-Retrieve Historical Incidents
-  │
-  ▼
-Inspect Deployment Context
-  │
-  ▼
-Generate Hypotheses
-  │
-  ▼
-Validate Against Evidence
-  │
-  ▼
-Generate Investigation Report
-  │
-  ▼
-END
-```
-
-The AI can produce:
-
-```text
-Incident #1042
-
-Summary:
-Checkout service experienced elevated 500 errors.
-
-Possible cause:
-Database connection exhaustion.
-
-Evidence:
-- Database pool reached configured limit.
-- 81% of failures occurred on /checkout.
-- Error spike began shortly after deployment v1.8.2.
-- Similar historical incident occurred previously.
-
-Recommended investigation:
-1. Inspect database connection configuration.
-2. Review database-related changes in v1.8.2.
-3. Check connection lifecycle in checkout handlers.
-
-Sources:
-- Event #183921
-- Deployment #182
-- Runbook: database-incidents.md
-- Historical incident #921
-```
-
-The system should clearly distinguish evidence from AI-generated hypotheses.
-
----
-
-# Hugging Face Integration
-
-OpsPilot uses the Hugging Face API for AI inference.
-
-Two model capabilities are required:
-
-### LLM
-
-Used for:
-
-* incident summarization
-* hypothesis generation
-* evidence analysis
-* investigation reports
-* natural-language responses
-
-### Embedding Model
-
-Used for:
-
-* document embeddings
-* semantic search
-* historical incident retrieval
-* technical knowledge retrieval
-
-The exact models should be configurable through environment variables rather than hard-coded throughout the application.
-
-Example:
-
-```env
-HF_API_TOKEN=your_token
-
-HF_LLM_MODEL=your_llm_model
-HF_EMBEDDING_MODEL=your_embedding_model
-```
-
-This allows the models to be changed without modifying the application architecture.
-
----
-
-# Main Features
-
-## Authentication
-
-* User registration
-* Login
-* JWT authentication
-* Password hashing
-* Protected routes
-* Logout
-
-## Authorization
-
-* Project ownership
-* Project members
-* Role-based permissions
-
-Example roles:
-
-```text
-OWNER
-ADMIN
-MEMBER
-VIEWER
-```
-
----
-
-## Project Management
-
-* Create project
-* Update project
-* Delete project
-* Project API keys
-* Environment management
-* Service management
-
----
-
-## Event Ingestion
-
-* REST API
-* API-key authentication
-* Event validation
-* Event storage
-* Event filtering
-* Event search
-* Pagination
-
----
-
-## Incident Management
-
-* Automatic incident creation
-* Manual incident creation
-* Severity
-* Status
-* Assignment
-* Timeline
-* Comments
-* Resolution notes
-
-Incident statuses:
-
-```text
-OPEN
-INVESTIGATING
-RESOLVED
-IGNORED
-```
-
----
-
-## AI Investigation
-
-* Incident summarization
-* Evidence retrieval
+* document processing
+* text chunking
+* embeddings
+* vector retrieval
 * RAG
-* Historical incident retrieval
-* Deployment correlation
-* Hypothesis generation
-* Evidence validation
-* Investigation report
+* structured extraction
+* LangChain
+* LangGraph
+* Hugging Face models
 
----
-
-## Knowledge Base
-
-* Upload documents
-* Process documents
-* Chunk documents
-* Generate embeddings
-* Semantic retrieval
-* Source citations
-
----
-
-## Deployment Tracking
-
-Developers can record deployments:
+Example workflow:
 
 ```text
-version
-service
-environment
-commit
-deployed_at
-deployed_by
-```
-
-This allows the AI to correlate incidents with recent deployments.
-
----
-
-## Redis
-
-Redis will be used for:
-
-* Background job queues
-* Event processing
-* Caching
-* Rate limiting
-
----
-
-## Docker
-
-The application will be containerized.
-
-Development environment:
-
-```text
-React
-FastAPI
-PostgreSQL
-Redis
-Worker
-```
-
-can be started using:
-
-```bash
-docker compose up
+Tender PDF
+    ↓
+Text Extraction
+    ↓
+Document Cleaning
+    ↓
+Chunking
+    ↓
+Embedding Generation
+    ↓
+Vector Storage
+    ↓
+Requirement Extraction
+    ↓
+RAG / Retrieval
+    ↓
+AI Analysis
+    ↓
+Human Verification
 ```
 
 ---
 
-## CI/CD
+## Technology Stack
 
-GitHub Actions will automate:
-
-```text
-Push / Pull Request
-        │
-        ▼
-Lint
-        │
-        ▼
-Tests
-        │
-        ▼
-Build
-        │
-        ▼
-Docker Build
-        │
-        ▼
-Deployment
-```
-
----
-
-# Technology Stack
-
-## Frontend
+### Frontend
 
 * React
 * TypeScript
 * Vite
 * Tailwind CSS
 
-## Backend
+### Backend
 
 * Python
 * FastAPI
@@ -568,192 +211,191 @@ Deployment
 * SQLAlchemy
 * Alembic
 
-## Database
+### Database
 
 * PostgreSQL
-* pgvector
 
-## AI
+### AI
 
 * Hugging Face Inference API
+* Hugging Face embedding models
 * LangChain
 * LangGraph
-* Embeddings
-* RAG
+* Retrieval-Augmented Generation
 
-## Infrastructure
+### Infrastructure
 
 * Redis
 * Docker
 * Docker Compose
-
-## CI/CD
-
 * GitHub Actions
 
-## Deployment
+### Testing
 
-Initial deployment can use:
-
-* Vercel for frontend
-* Railway / Render for backend and infrastructure
-
-Cloud infrastructure can be expanded later.
+* Pytest
+* API integration tests
+* Frontend tests
 
 ---
 
-# Project Architecture
+## High-Level Architecture
 
 ```text
-ops-pilot/
-│
-├── frontend/
-│
-├── backend/
-│
-├── worker/
-│
-├── docs/
-│
-├── docker/
-│
-├── .github/
-│
-├── docker-compose.yml
-├── .env.example
-├── .gitignore
-├── README.md
-└── LICENSE
+                    React + TypeScript
+                           │
+                           │ REST API
+                           ▼
+                       FastAPI
+                           │
+            ┌──────────────┼───────────────┐
+            │              │               │
+            ▼              ▼               ▼
+       PostgreSQL        Redis          AI Layer
+                                         │
+                              ┌──────────┴──────────┐
+                              │                     │
+                         LangChain              LangGraph
+                              │                     │
+                              └──────────┬──────────┘
+                                         │
+                                  Hugging Face
+                                         │
+                                         ▼
+                              Embeddings + LLM
 ```
 
 ---
 
-# Security Considerations
+## Security
 
-OpsPilot should never expose sensitive information unnecessarily.
+The application should implement:
 
-Important security practices include:
-
-* hashed passwords
 * JWT authentication
-* API key hashing
-* environment variables for secrets
-* project-level authorization
+* role-based authorization
+* organization isolation
+* API validation
+* file type validation
+* upload size limits
 * rate limiting
-* input validation
-* file upload restrictions
-* safe logging
-* protection against prompt injection in retrieved documents
+* environment-based secrets
+* audit logging
 
-AI-generated recommendations should be treated as assistance rather than automatically executed actions.
+Tender documents may contain commercially sensitive information, so tenant isolation and access control are treated as core application requirements.
 
 ---
 
-# Development Philosophy
+## Development Roadmap
 
-OpsPilot is intentionally built incrementally.
+### Phase 1 — Core Application
 
-The project does not attempt to implement every infrastructure technology at once.
+* Authentication
+* Organizations
+* Tender upload
+* Tender database model
+* Tender dashboard
 
-The development progression is:
+### Phase 2 — Document Processing
 
-```text
-Phase 1
-Core full-stack application
+* PDF extraction
+* Text cleaning
+* Chunking
+* Metadata generation
 
-        ↓
+### Phase 3 — RAG
 
-Phase 2
-AI + RAG
-
-        ↓
-
-Phase 3
-Redis + background processing
-
-        ↓
-
-Phase 4
-Docker
-
-        ↓
-
-Phase 5
-Testing + CI/CD
-
-        ↓
-
-Phase 6
-Production hardening
-
-        ↓
-
-Phase 7
-Optional cloud/Kubernetes improvements
-```
-
-The goal is to understand every technology through actual product requirements rather than adding technologies simply for a resume.
-
----
-
-# Future Improvements
-
-Potential future features include:
-
-* GitHub integration
-* automatic deployment ingestion
-* Slack/Discord notifications
-* email alerts
-* OpenTelemetry integration
-* metrics ingestion
-* distributed tracing
-* advanced anomaly detection
-* Kubernetes deployment
-* cloud infrastructure
-* team analytics
-* incident postmortem generation
-* AI-generated runbooks
-
-These are intentionally outside the initial MVP.
-
----
-
-# Learning Objectives
-
-By completing OpsPilot, the developer should gain practical experience with:
-
-* Full-stack application architecture
-* REST API design
-* Authentication and authorization
-* PostgreSQL database design
+* Embeddings
 * Vector search
-* RAG
-* LangChain
-* LangGraph
-* LLM API integration
-* Embedding pipelines
+* Retrieval pipeline
+* Question answering
+* Source citations
+
+### Phase 4 — AI Analysis
+
+* Requirement extraction
+* Requirement categorization
+* Structured outputs
+* Bid readiness analysis
+* Missing requirement detection
+
+### Phase 5 — Company Matching
+
+* Company profile
+* Requirement matching
+* Evidence management
+* Compliance status
+
+### Phase 6 — Workflow
+
+* Submission checklist
+* Tasks
+* Deadlines
+* Audit logs
+
+### Phase 7 — Production Engineering
+
 * Redis
-* Asynchronous processing
+* Background processing
 * Docker
 * CI/CD
 * Automated testing
-* Production deployment
+* Logging
 * Error handling
-* API security
-* System design
+* Rate limiting
 
 ---
 
-# Project Goal
+## Engineering Goals
 
-OpsPilot is designed to demonstrate that the developer can build more than an AI demo.
+This project is designed to demonstrate practical software engineering rather than only AI API usage.
 
-The project should demonstrate the ability to:
+It focuses on:
 
-> **Design, build, deploy and maintain a production-oriented full-stack application that uses AI as one component of a larger software system.**
+* REST API design
+* database modeling
+* authentication and authorization
+* asynchronous processing
+* background jobs
+* document processing
+* RAG architecture
+* AI workflow orchestration
+* caching
+* testing
+* containerization
+* CI/CD
+* production security
+* observability
 
 ---
 
-## License
+## Important Design Principle
 
-MIT
+AI-generated information is treated as an assistive layer.
+
+Critical procurement decisions must remain human-reviewed.
+
+The system should provide evidence and source references rather than presenting unsupported AI conclusions as facts.
+
+---
+
+## Future Improvements
+
+Potential future additions:
+
+* email ingestion
+* OCR for scanned tenders
+* multilingual Indian-language support
+* tender discovery
+* organization-specific retrieval
+* automated clarification question generation
+* supplier comparison
+* notification system
+* analytics
+* cloud deployment
+* advanced document parsing
+* human feedback loops
+
+---
+
+## Status
+
+🚧 Under active development.
