@@ -41,3 +41,6 @@ httpx
 
 # Code Quality
 ruff
+
+pwdlib
+datatime
