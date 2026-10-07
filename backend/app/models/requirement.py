@@ -9,11 +9,12 @@ from app.core.database import Base
 class Requirement(Base):
     __tablename__ = "requirements"
 
-    id: Mapped[int]= mapped_column(primary_key=True)
-    tender_id: Mapped[int] = mapped_column(ForeignKey("tenders.id"),nullable=False,index=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    tender_id: Mapped[int] = mapped_column(ForeignKey("tenders.id"), nullable=False, index=True)
     category: Mapped[str] = mapped_column(
         String(50),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     title: Mapped[str] = mapped_column(
@@ -36,16 +37,56 @@ class Requirement(Base):
         nullable=True
     )
 
+    source_section: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True
+    )
+
     mandatory: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
         nullable=False
     )
 
+    # Verification status: PENDING, VERIFIED, REJECTED
     status: Mapped[str] = mapped_column(
         String(30),
         default="PENDING",
         nullable=False
+    )
+
+    # Capability Match status: PENDING, MATCHED, PARTIAL, MISSING, REQUIRES_VERIFICATION
+    match_status: Mapped[str] = mapped_column(
+        String(30),
+        default="PENDING",
+        nullable=False
+    )
+
+    matched_evidence: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
+    )
+
+    verification_notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
+    )
+
+    is_checklist_item: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    checklist_completed: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    checklist_notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
     )
 
     created_at: Mapped[datetime] = mapped_column(

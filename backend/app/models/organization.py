@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import String, DateTime
-from sqlalchemy.orm import relationship , Mapped, mapped_column
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.core.database import Base
 
 
@@ -12,6 +12,7 @@ class Organization(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    user = relationship("User", back_populates="organization")
-
-    tenders = relationship("Tender", back_populates="organization")
+    users = relationship("User", back_populates="organization", cascade="all, delete-orphan")
+    tenders = relationship("Tender", back_populates="organization", cascade="all, delete-orphan")
+    company_profile = relationship("CompanyProfile", back_populates="organization", uselist=False, cascade="all, delete-orphan")
+    audit_logs = relationship("AuditLog", back_populates="organization", cascade="all, delete-orphan")

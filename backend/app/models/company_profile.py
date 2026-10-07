@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -9,12 +9,13 @@ from app.core.database import Base
 class CompanyProfile(Base):
     __tablename__ = "company_profiles"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
     organization_id: Mapped[int] = mapped_column(
         ForeignKey("organizations.id"),
         nullable=False,
-        unique=True
+        unique=True,
+        index=True
     )
 
     legal_name: Mapped[str] = mapped_column(
@@ -28,6 +29,7 @@ class CompanyProfile(Base):
     )
 
     years_experience: Mapped[int | None] = mapped_column(
+        Integer,
         nullable=True
     )
 
@@ -38,6 +40,26 @@ class CompanyProfile(Base):
 
     website: Mapped[str | None] = mapped_column(
         String(255),
+        nullable=True
+    )
+
+    certifications: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
+    )
+
+    technical_capabilities: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
+    )
+
+    past_contracts_count: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True
+    )
+
+    past_experience_summary: Mapped[str | None] = mapped_column(
+        Text,
         nullable=True
     )
 
@@ -55,4 +77,9 @@ class CompanyProfile(Base):
         DateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow
+    )
+
+    organization = relationship(
+        "Organization",
+        back_populates="company_profile"
     )

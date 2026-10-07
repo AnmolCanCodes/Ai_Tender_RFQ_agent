@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import DateTime, ForeignKey, String, Integer
+from sqlalchemy import DateTime, ForeignKey, String, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
@@ -7,9 +7,9 @@ from app.core.database import Base
 class Document(Base):
     __tablename__ = "documents"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    tender_id: Mapped[int] = mapped_column(ForeignKey("tenders.id"),nullable=False,index=True)
-    
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    tender_id: Mapped[int] = mapped_column(ForeignKey("tenders.id"), nullable=False, index=True)
+
     filename: Mapped[str] = mapped_column(
         String(255),
         nullable=False
@@ -35,10 +35,21 @@ class Document(Base):
         nullable=True
     )
 
+    file_hash: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+        index=True
+    )
+
     processing_status: Mapped[str] = mapped_column(
         String(30),
         default="UPLOADED",
         nullable=False
+    )
+
+    error_message: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -53,5 +64,6 @@ class Document(Base):
 
     chunks = relationship(
         "Chunk",
-        back_populates="document"
+        back_populates="document",
+        cascade="all, delete-orphan"
     )

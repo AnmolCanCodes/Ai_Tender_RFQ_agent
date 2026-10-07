@@ -4,9 +4,11 @@ uvicorn[standard]
 python-multipart
 
 # Configuration
-pydantic
+pydantic[email]
 pydantic-settings
 python-dotenv
+email-validator
+
 
 # Database
 sqlalchemy
@@ -43,4 +45,3 @@ httpx
 ruff
 
 pwdlib
-datatime
