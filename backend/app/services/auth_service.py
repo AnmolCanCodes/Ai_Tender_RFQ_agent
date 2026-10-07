@@ -107,6 +107,6 @@ def authenticate_user(
 
 
 def create_login_token(user: User) -> str:
-    """Generates signed JWT token containing user identifier."""
-    return create_access_token(user.id)
+    """Generates signed JWT token containing user identifier and organization ID."""
+    return create_access_token(user.id, user.organization_id)
 

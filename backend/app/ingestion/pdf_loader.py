@@ -14,9 +14,9 @@ from pypdf.errors import PdfReadError, FileNotDecryptedError
 
 logger = logging.getLogger("app.ingestion.pdf_loader")
 
-# Security and resource bounds
-MAX_PAGE_LIMIT = 1500
-MAX_PDF_SIZE_BYTES = 50 * 1024 * 1024  # 50MB
+# MVP-friendly resource bounds
+MAX_PAGE_LIMIT = 5000
+MAX_PDF_SIZE_BYTES = 200 * 1024 * 1024  # 200MB
 
 
 @dataclass(frozen=True)
@@ -87,13 +87,13 @@ def extract_text_from_pdf(
         raise ValueError(f"Corrupted or invalid PDF format: {exc}") from exc
 
     if reader.is_encrypted:
-        # Check if decryptable with empty password
+        # MVP mode: Attempt to decrypt with empty password, log warning if fails
         try:
             decrypted = reader.decrypt("")
             if decrypted == 0:
-                raise ValueError("PDF document is password protected and cannot be processed.")
+                logger.warning("PDF is password protected. Attempting extraction anyway - may fail.")
         except FileNotDecryptedError as exc:
-            raise ValueError("PDF document is encrypted and requires a decryption key.") from exc
+            logger.warning("PDF decryption failed with empty password. Attempting extraction anyway - may fail.")
 
     total_pages = len(reader.pages)
     if total_pages == 0:

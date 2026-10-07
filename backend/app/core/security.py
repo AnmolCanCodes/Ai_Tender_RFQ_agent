@@ -25,13 +25,14 @@ def verify_password(
         return False
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: int, organization_id: int = 1) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
 
     payload = {
         "sub": str(user_id),
+        "organization_id": str(organization_id),
         "exp": expire
     }
 

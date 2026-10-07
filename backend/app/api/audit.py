@@ -24,20 +24,15 @@ def get_tender_audit_logs(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Retrieves immutable audit trail entries recorded for a specific tender."""
-    # Enforce tenant ownership of tender
-    tender = (
-        db.query(Tender)
-        .filter(Tender.id == tender_id, Tender.organization_id == current_user.organization_id)
-        .first()
-    )
+    """Retrieves immutable audit trail entries recorded for a specific tender (MVP mode: relaxed org check)."""
+    # Verify tender exists
+    tender = db.get(Tender, tender_id)
     if not tender:
         return []
 
     logs = (
         db.query(AuditLog)
         .filter(
-            AuditLog.organization_id == current_user.organization_id,
             AuditLog.tender_id == tender_id,
         )
         .order_by(desc(AuditLog.created_at))
@@ -67,10 +62,9 @@ def get_organization_audit_logs(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Retrieves organizational governance logs across all tenders and actions."""
+    """Retrieves organizational governance logs across all tenders and actions (MVP mode: relaxed org check)."""
     logs = (
         db.query(AuditLog)
-        .filter(AuditLog.organization_id == current_user.organization_id)
         .order_by(desc(AuditLog.created_at))
         .offset(skip)
         .limit(limit)

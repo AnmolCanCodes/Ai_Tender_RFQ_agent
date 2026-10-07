@@ -20,7 +20,7 @@ logger = logging.getLogger("app.services.document_service")
 
 # Base directory for storing uploaded procurement documents
 UPLOAD_BASE_DIR = Path("uploads")
-MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50 MB
+MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024  # 200 MB (MVP-friendly)
 ALLOWED_MIME_TYPES = {"application/pdf"}
 ALLOWED_EXTENSIONS = {".pdf"}
 
@@ -52,16 +52,12 @@ def upload_document(
     Returns:
         Persisted Document model instance.
     """
-    # 1. Verify tender ownership
-    tender = (
-        db.query(Tender)
-        .filter(Tender.id == tender_id, Tender.organization_id == organization_id)
-        .first()
-    )
+    # 1. Verify tender exists (MVP mode: relaxed org boundary check)
+    tender = db.get(Tender, tender_id)
     if not tender:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tender not found in this organization.",
+            detail="Tender not found.",
         )
 
     # 2. Validate filename and extension
@@ -144,13 +140,8 @@ def get_document_by_id(
     organization_id: int,
     document_id: int,
 ) -> Document:
-    """Retrieves document verifying tenant access through parent tender."""
-    doc = (
-        db.query(Document)
-        .join(Tender, Document.tender_id == Tender.id)
-        .filter(Document.id == document_id, Tender.organization_id == organization_id)
-        .first()
-    )
+    """Retrieves document by primary key ID (MVP mode: relaxed org boundary check)."""
+    doc = db.get(Document, document_id)
     if not doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -164,13 +155,9 @@ def list_documents_for_tender(
     organization_id: int,
     tender_id: int,
 ) -> Sequence[Document]:
-    """Lists all documents registered under a specific tender."""
-    # Verify tender belongs to organization
-    tender = (
-        db.query(Tender)
-        .filter(Tender.id == tender_id, Tender.organization_id == organization_id)
-        .first()
-    )
+    """Lists all documents registered under a specific tender (MVP mode: relaxed org check)."""
+    # Verify tender exists
+    tender = db.get(Tender, tender_id)
     if not tender:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

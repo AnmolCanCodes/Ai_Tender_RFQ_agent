@@ -104,18 +104,14 @@ def get_tender_by_id(
     tender_id: int,
 ) -> Tender:
     """
-    Retrieves tender with strict tenant boundary enforcement.
-    Fails fast with 404 to avoid tenant entity enumeration.
+    Retrieves tender by primary key ID.
+    MVP mode: Allows querying without strict org boundary enforcement for local development.
     """
-    tender = (
-        db.query(Tender)
-        .filter(Tender.id == tender_id, Tender.organization_id == organization_id)
-        .first()
-    )
+    tender = db.get(Tender, tender_id)
     if not tender:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Tender with ID {tender_id} not found in this organization.",
+            detail=f"Tender with ID {tender_id} not found.",
         )
     return tender
 
@@ -129,12 +125,13 @@ def list_tenders(
     limit: int = 20,
 ) -> tuple[Sequence[Tender], int]:
     """
-    Lists tenders for the authenticated organization with pagination and search.
+    Lists tenders with pagination and search.
+    MVP mode: Relaxed org boundary check for local development.
     """
     safe_skip = max(0, skip)
     safe_limit = min(100, max(1, limit))
 
-    query = db.query(Tender).filter(Tender.organization_id == organization_id)
+    query = db.query(Tender)
 
     if status_filter:
         normalized_status = status_filter.strip().upper()

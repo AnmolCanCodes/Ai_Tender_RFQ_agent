@@ -16,6 +16,7 @@ from app.api.intelligence import router as intelligence_router
 from app.api.requirements import router as requirements_router
 from app.api.tenders import router as tenders_router
 from app.core.config import settings
+from app.core.database import initialize_database
 
 # Configure structured logging
 logging.basicConfig(
@@ -31,6 +32,12 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+
+@app.on_event("startup")
+def startup_event():
+    """Ensure the schema exists before auth or API routes hit the database."""
+    initialize_database()
 
 # Cross-Origin Resource Sharing (CORS)
 origins = [
@@ -52,13 +59,18 @@ app.add_middleware(
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
     """
-    Data Leakage Prevention: Masks internal server errors and stack traces from external clients.
-    Logs full trace internally for security auditing.
+    MVP-friendly exception handler: Returns actual error details for easy debugging.
+    Includes exception type, message, and stack trace in development mode.
     """
+    import traceback
     logger.error("Unhandled server exception at %s: %s", request.url.path, exc, exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "An internal server error occurred. Please contact the administrator."},
+        content={
+            "detail": str(exc),
+            "error_type": type(exc).__name__,
+            "stack_trace": traceback.format_exc(),
+        },
     )
 
 

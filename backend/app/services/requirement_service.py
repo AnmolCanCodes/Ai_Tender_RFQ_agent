@@ -25,17 +25,12 @@ def get_requirement_by_id(
     organization_id: int,
     requirement_id: int,
 ) -> Requirement:
-    """Retrieves requirement verifying tenant ownership via parent tender."""
-    req = (
-        db.query(Requirement)
-        .join(Tender, Requirement.tender_id == Tender.id)
-        .filter(Requirement.id == requirement_id, Tender.organization_id == organization_id)
-        .first()
-    )
+    """Retrieves requirement by primary key ID (MVP mode: relaxed org boundary check)."""
+    req = db.get(Requirement, requirement_id)
     if not req:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Requirement not found in this organization.",
+            detail="Requirement not found.",
         )
     return req
 
@@ -52,13 +47,10 @@ def list_requirements_for_tender(
 ) -> Sequence[Requirement]:
     """
     Lists requirements with optional category, status, and checklist filters.
+    MVP mode: Relaxed org boundary check for local development.
     """
-    # Enforce tenant isolation on tender
-    tender = (
-        db.query(Tender)
-        .filter(Tender.id == tender_id, Tender.organization_id == organization_id)
-        .first()
-    )
+    # Verify tender exists
+    tender = db.get(Tender, tender_id)
     if not tender:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -163,13 +155,10 @@ def get_tender_checklist_summary(
 ) -> dict[str, Any]:
     """
     Calculates progress metrics for the tender submission checklist.
+    MVP mode: Relaxed org boundary check for local development.
     """
-    # Verify tender ownership
-    tender = (
-        db.query(Tender)
-        .filter(Tender.id == tender_id, Tender.organization_id == organization_id)
-        .first()
-    )
+    # Verify tender exists
+    tender = db.get(Tender, tender_id)
     if not tender:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

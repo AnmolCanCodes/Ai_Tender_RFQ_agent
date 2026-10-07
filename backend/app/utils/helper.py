@@ -94,13 +94,14 @@ def sanitize_text(text: str) -> str:
 
 def sanitize_prompt_input(text: str, max_chars: int = 15000) -> str:
     """
-    Guards AI input by capping payload size and mitigating delimiter injection attacks.
+    MVP-friendly prompt sanitizer: Simple trim and cleaner that preserves
+    quotes, brackets, and markdown characters needed for LLM extraction and RAG queries.
     """
     if not text:
         return ""
-    sanitized = sanitize_text(text)
-    # Neutralize markdown and triple backtick escapes that attempt prompt boundaries breaking
-    sanitized = sanitized.replace("```", "'''")
+    # Simple trim - preserve all formatting characters
+    sanitized = text.strip()
+    # Cap length for model context
     if len(sanitized) > max_chars:
         return sanitized[:max_chars] + "\n[Content truncated for model context limit]"
     return sanitized
