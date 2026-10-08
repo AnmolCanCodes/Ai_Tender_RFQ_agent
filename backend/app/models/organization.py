@@ -14,5 +14,4 @@ class Organization(Base):
 
     users = relationship("User", back_populates="organization", cascade="all, delete-orphan")
     tenders = relationship("Tender", back_populates="organization", cascade="all, delete-orphan")
-    company_profile = relationship("CompanyProfile", back_populates="organization", uselist=False, cascade="all, delete-orphan")
-    audit_logs = relationship("AuditLog", back_populates="organization", cascade="all, delete-orphan")
+    

@@ -10,36 +10,43 @@ from app.core.database import Base
 class Chunk(Base):
     __tablename__ = "chunks"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+
     document_id: Mapped[int] = mapped_column(
         ForeignKey("documents.id"),
         nullable=False,
         index=True
     )
+
     tender_id: Mapped[int] = mapped_column(
         ForeignKey("tenders.id"),
         nullable=False,
         index=True
     )
+
     content: Mapped[str] = mapped_column(
         Text,
         nullable=False
     )
+
     page_number: Mapped[int | None] = mapped_column(
         Integer,
         nullable=True
     )
+
     section: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True
     )
+
     chunk_index: Mapped[int] = mapped_column(
         Integer,
         nullable=False
     )
 
-    # 384 dimensions for all-MiniLM-L6-v2 / bge-small
-    embedding = mapped_column(
+    # Replace 384 with the dimension
+    # of your actual embedding model.
+    embedding: Mapped[object] = mapped_column(
         Vector(384),
         nullable=True
     )
@@ -51,10 +58,5 @@ class Chunk(Base):
 
     document = relationship(
         "Document",
-        back_populates="chunks"
-    )
-
-    tender = relationship(
-        "Tender",
         back_populates="chunks"
     )

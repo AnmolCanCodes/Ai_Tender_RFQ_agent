@@ -18,7 +18,6 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     organization = relationship("Organization", back_populates="users")
-    audit_logs = relationship("AuditLog", back_populates="user")
 
 
     

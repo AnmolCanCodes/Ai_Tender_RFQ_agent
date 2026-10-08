@@ -9,13 +9,12 @@ from app.core.database import Base
 class CompanyProfile(Base):
     __tablename__ = "company_profiles"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     organization_id: Mapped[int] = mapped_column(
         ForeignKey("organizations.id"),
         nullable=False,
-        unique=True,
-        index=True
+        unique=True
     )
 
     legal_name: Mapped[str] = mapped_column(
@@ -77,9 +76,4 @@ class CompanyProfile(Base):
         DateTime,
         default=datetime.utcnow,
         onupdate=datetime.utcnow
-    )
-
-    organization = relationship(
-        "Organization",
-        back_populates="company_profile"
     )

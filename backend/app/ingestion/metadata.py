@@ -7,7 +7,7 @@ to discover tender reference numbers, submission deadlines, estimated values, an
 import re
 from dataclasses import dataclass
 from typing import Sequence
-from app.ingestion.pdf_loader import ExtractedPage
+from app.ingestion.pdf_loader import ExtractedPage, PDFExtractionResult
 
 # Heuristic patterns for rapid pre-LLM detection
 REF_NO_REGEX = re.compile(
@@ -46,8 +46,11 @@ class HeuristicTenderInfo:
     detected_estimated_value_raw: str | None
 
 
-def compute_document_stats(pages: Sequence[ExtractedPage]) -> DocumentStats:
+def compute_document_stats(pages: Sequence[ExtractedPage] | PDFExtractionResult) -> DocumentStats:
     """Computes basic text statistics across extracted pages."""
+    if isinstance(pages, PDFExtractionResult):
+        pages = pages.pages
+
     total_pages = len(pages)
     if total_pages == 0:
         return DocumentStats(total_pages=0, total_characters=0, total_words=0, average_words_per_page=0.0)
@@ -64,11 +67,14 @@ def compute_document_stats(pages: Sequence[ExtractedPage]) -> DocumentStats:
     )
 
 
-def extract_heuristic_tender_info(pages: Sequence[ExtractedPage]) -> HeuristicTenderInfo:
+def extract_heuristic_tender_info(pages: Sequence[ExtractedPage] | PDFExtractionResult) -> HeuristicTenderInfo:
     """
     Scans the initial pages (first 5 pages where tender summaries typically reside)
     for prominent identifiers, deadlines, and monetary figures.
     """
+    if isinstance(pages, PDFExtractionResult):
+        pages = pages.pages
+
     # Look at first 5 pages or all if fewer
     sample_text = "\n".join(p.text for p in pages[:5])
 

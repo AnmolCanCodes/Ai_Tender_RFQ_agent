@@ -17,8 +17,6 @@ class Tender(Base):
     estimated_value: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
     emd_amount: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
     submission_deadline: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    pre_bid_meeting_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    clarification_deadline: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="DRAFT")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -26,7 +24,5 @@ class Tender(Base):
     organization = relationship("Organization", back_populates="tenders")
     documents = relationship("Document", back_populates="tender", cascade="all, delete-orphan")
     requirements = relationship("Requirement", back_populates="tender", cascade="all, delete-orphan")
-    chunks = relationship("Chunk", back_populates="tender", cascade="all, delete-orphan")
-    audit_logs = relationship("AuditLog", back_populates="tender")
-
+    
 

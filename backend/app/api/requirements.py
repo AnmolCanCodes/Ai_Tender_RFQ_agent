@@ -1,44 +1,48 @@
-"""
-Requirement management and submission checklist endpoints.
-"""
-
-from typing import Any
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.user import User
-from app.schemas.requirement import (
-    ChecklistUpdateRequest,
-    RequirementResponse,
-    RequirementVerificationRequest,
-)
+from app.schemas.requirement import RequirementResponse, RequirementUpdate
 from app.services.requirement_service import (
-    get_tender_checklist_summary,
+    get_requirement_by_id,
     list_requirements_for_tender,
     update_checklist_item,
     update_requirement_verification,
+    get_tender_checklist_summary,
 )
 from app.utils.dependencies import get_current_user
 
-router = APIRouter(tags=["Requirements & Checklist"])
+router = APIRouter(
+    prefix="/tenders/{tender_id}/requirements",
+    tags=["Requirements"]
+)
+
+
+class VerificationUpdate(BaseModel):
+    status: str
+    notes: str | None = None
+
+
+class ChecklistUpdate(BaseModel):
+    completed: bool
+    notes: str | None = None
 
 
 @router.get(
-    "/tenders/{tender_id}/requirements/",
-    response_model=list[RequirementResponse],
+    "",
+    response_model=list[RequirementResponse]
 )
-def get_requirements(
+def list_requirements(
     tender_id: int,
     category: str | None = None,
     verification_status: str | None = None,
     match_status: str | None = None,
     mandatory_only: bool | None = None,
     checklist_only: bool | None = None,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
-    """Lists categorized legal, financial, and technical requirements for a tender."""
     return list_requirements_for_tender(
         db=db,
         organization_id=current_user.organization_id,
@@ -47,65 +51,79 @@ def get_requirements(
         verification_status=verification_status,
         match_status=match_status,
         mandatory_only=mandatory_only,
-        checklist_only=checklist_only,
+        checklist_only=checklist_only
     )
 
 
-@router.post(
-    "/requirements/{requirement_id}/verify",
-    response_model=RequirementResponse,
+@router.get(
+    "/{requirement_id}",
+    response_model=RequirementResponse
 )
-def verify_requirement(
+def get_one(
+    tender_id: int,
     requirement_id: int,
-    payload: RequirementVerificationRequest,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
-    """
-    Submits a human verification decision (VERIFIED / REJECTED) with audit notes.
-    """
+    return get_requirement_by_id(
+        db=db,
+        organization_id=current_user.organization_id,
+        requirement_id=requirement_id
+    )
+
+
+@router.put(
+    "/{requirement_id}/verify",
+    response_model=RequirementResponse
+)
+def verify(
+    tender_id: int,
+    requirement_id: int,
+    data: VerificationUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
     return update_requirement_verification(
         db=db,
         organization_id=current_user.organization_id,
         user_id=current_user.id,
         requirement_id=requirement_id,
-        verification_status=payload.status,
-        notes=payload.notes,
+        verification_status=data.status,
+        notes=data.notes
     )
 
 
 @router.put(
-    "/requirements/{requirement_id}/checklist",
-    response_model=RequirementResponse,
+    "/{requirement_id}/checklist",
+    response_model=RequirementResponse
 )
-def update_checklist_status(
+def update_checklist(
+    tender_id: int,
     requirement_id: int,
-    payload: ChecklistUpdateRequest,
-    current_user: User = Depends(get_current_user),
+    data: ChecklistUpdate,
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
-    """Marks a required document as completed or adds notes in the submission checklist."""
     return update_checklist_item(
         db=db,
         organization_id=current_user.organization_id,
         user_id=current_user.id,
         requirement_id=requirement_id,
-        completed=payload.completed,
-        notes=payload.notes,
+        completed=data.completed,
+        notes=data.notes
     )
 
 
 @router.get(
-    "/tenders/{tender_id}/checklist",
+    "/checklist/summary"
 )
-def get_checklist_progress(
+def checklist_summary(
     tender_id: int,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
-    """Calculates completion percentage and lists all required submission documents."""
     return get_tender_checklist_summary(
         db=db,
         organization_id=current_user.organization_id,
-        tender_id=tender_id,
+        tender_id=tender_id
     )

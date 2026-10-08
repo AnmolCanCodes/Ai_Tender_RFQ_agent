@@ -9,12 +9,17 @@ from app.core.database import Base
 class Requirement(Base):
     __tablename__ = "requirements"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    tender_id: Mapped[int] = mapped_column(ForeignKey("tenders.id"), nullable=False, index=True)
-    category: Mapped[str] = mapped_column(
-        String(50),
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    tender_id: Mapped[int] = mapped_column(
+        ForeignKey("tenders.id"),
         nullable=False,
         index=True
+    )
+
+    category: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False
     )
 
     title: Mapped[str] = mapped_column(
@@ -48,14 +53,17 @@ class Requirement(Base):
         nullable=False
     )
 
-    # Verification status: PENDING, VERIFIED, REJECTED
     status: Mapped[str] = mapped_column(
         String(30),
         default="PENDING",
         nullable=False
     )
 
-    # Capability Match status: PENDING, MATCHED, PARTIAL, MISSING, REQUIRES_VERIFICATION
+    verification_notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
+    )
+
     match_status: Mapped[str] = mapped_column(
         String(30),
         default="PENDING",
@@ -63,11 +71,6 @@ class Requirement(Base):
     )
 
     matched_evidence: Mapped[str | None] = mapped_column(
-        Text,
-        nullable=True
-    )
-
-    verification_notes: Mapped[str | None] = mapped_column(
         Text,
         nullable=True
     )
