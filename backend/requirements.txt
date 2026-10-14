@@ -12,9 +12,11 @@ email-validator
 
 # Database
 sqlalchemy
+sqlalchemy[asyncio]
 psycopg[binary]
 alembic
 pgvector
+psycopg2-binary
 
 # Authentication / Security
 python-jose[cryptography]

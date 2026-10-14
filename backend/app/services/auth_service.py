@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.core.security import (
     create_access_token,
@@ -17,11 +18,9 @@ def register_user(
     email: str,
     password: str
 ):
-    existing_user = (
-        db.query(User)
-        .filter(User.email == email)
-        .first()
-    )
+    existing_user = db.execute(
+        select(User).where(User.email == email)
+    ).scalar_one_or_none()
 
     if existing_user:
         raise HTTPException(
@@ -56,11 +55,9 @@ def authenticate_user(
     email: str,
     password: str
 ):
-    user = (
-        db.query(User)
-        .filter(User.email == email)
-        .first()
-    )
+    user = db.execute(
+        select(User).where(User.email == email)
+    ).scalar_one_or_none()
 
     if not user:
         raise HTTPException(
@@ -81,4 +78,7 @@ def authenticate_user(
 
 
 def create_login_token(user: User):
-    return create_access_token(user.id, user.organization_id)
+    return create_access_token(
+        user.id,
+        user.organization_id
+    )

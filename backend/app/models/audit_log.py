@@ -3,9 +3,10 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from pydantic import BaseModel
+from app.core.database import Base
 
-class AuditLog(BaseModel):
+
+class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     id: Mapped[int] = mapped_column(primary_key=True)

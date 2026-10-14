@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.audit_log import AuditLog
+from app.schemas.audit import AuditLogResponse
 from app.utils.dependencies import get_current_user
 
 router = APIRouter(
@@ -13,7 +14,7 @@ router = APIRouter(
 
 @router.get(
     "",
-    response_model=list[AuditLog]
+    response_model=list[AuditLogResponse]
 )
 def list_logs(
     tender_id: int | None = None,
